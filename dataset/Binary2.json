@@ -1,0 +1,19 @@
+{
+	"name": "Binary2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azurepocstorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "production/au9/data/ptr/archive/cwh/pos_direct",
+				"container": "archives"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,215 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "load cwh pos data",
+				"type": "DatabricksSparkJar",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"mainClassName": "com.rxcorp.bdf.datalake.au9.run.Run",
+					"parameters": [
+						"load_cwh_pos_data",
+						"-lc",
+						"prod",
+						"-wed",
+						"2021-09-07",
+						"-fl",
+						"dbfs:/mnt/datalake-blob/production/au9/data/ptr/in/cwh/pos_direct"
+					],
+					"libraries": [
+						{
+							"jar": "dbfs:/FileStore/jars/australia-ptr-core-2.jar"
+						}
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "load bridge",
+				"type": "DatabricksSparkJar",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"mainClassName": "com.rxcorp.bdf.datalake.au9.run.Run",
+					"parameters": [
+						"data_production_pos_load",
+						"-lc",
+						"prod",
+						"-wed",
+						"2021-09-07",
+						"-fl",
+						"dbfs:/mnt/datalake-blob/production/au9/data/ptr/in/cwh/pos_direct",
+						"-usr",
+						"dummy",
+						"-pwd",
+						"dummy"
+					],
+					"libraries": [
+						{
+							"jar": "dbfs:/FileStore/jars/australia-ptr-core-2.jar"
+						}
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "code cwh pos data",
+				"type": "DatabricksSparkJar",
+				"dependsOn": [
+					{
+						"activity": "load bridge",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "load cwh pos data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"mainClassName": "com.rxcorp.bdf.datalake.au9.run.Run",
+					"parameters": [
+						"cwh_pos_daily_agg",
+						"-lc",
+						"prod",
+						"-wed",
+						"2021-09-07"
+					],
+					"libraries": [
+						{
+							"jar": "dbfs:/FileStore/jars/australia-ptr-core-2.jar"
+						}
+					]
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "pipeline().parameters.wed='LPOSD'",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "code cwh pos data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"deleteFilesAfterCompletion": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Binary1",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Binary2",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"parameters": {
+			"wed": {
+				"type": "string",
+				"defaultValue": "2021-09-11"
+			},
+			"wf_action": {
+				"type": "String",
+				"defaultValue": "LPOS"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-09-16T00:52:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

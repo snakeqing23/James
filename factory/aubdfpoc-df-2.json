@@ -1,0 +1,9 @@
+{
+	"name": "aubdfpoc-df-2",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "23b5a92a-3b08-467c-b68a-01f4fe8e605c",
+		"tenantId": "5989ece0-f90e-40bf-9c79-1a7beccdb861"
+	}
+}
